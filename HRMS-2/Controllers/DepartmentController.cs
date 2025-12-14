@@ -12,9 +12,9 @@ namespace HRMS_2.Controllers
     public class DepartmentController : ControllerBase
     {
         public static List<Department> departments = new List<Department>() {
-            new Department(){Id =1 , Name="Human Resourses",Description="",Floornumber=1 },
-            new Department(){Id =2 , Name="Finance",Description="",Floornumber=2},
-            new Department(){Id =3 , Name="Development",Description="",Floornumber=3},
+            new Department(){Id =1 , Name="Human Resourses",Description="Human Resourses Department",Floornumber=1 },
+            new Department(){Id =2 , Name="Finance",Description="Finance Department",Floornumber=2},
+            new Department(){Id =3 , Name="Development",Description="Development Department",Floornumber=3},
 
         };
 
