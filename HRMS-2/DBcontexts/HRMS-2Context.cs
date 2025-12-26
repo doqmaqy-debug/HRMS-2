@@ -10,9 +10,26 @@ namespace HRMS_2.DBcontexts
 
         
         }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Lookup>().HasData(
+                new Lookup { Id = 1, MajorCode = 0, MinorCode = 0, Name = "Employees Position" },
+                new Lookup { Id = 2, MajorCode = 0, MinorCode = 1, Name = "Developer" },
+                new Lookup { Id = 3, MajorCode = 0, MinorCode = 2, Name = "HR" },
+                new Lookup { Id = 4, MajorCode = 0, MinorCode = 3, Name = "Manager" },
+
+                new Lookup { Id = 5, MajorCode = 1, MinorCode = 0, Name = "Departments Type" },
+                new Lookup { Id = 6, MajorCode = 1, MinorCode = 1, Name = "Finance" },
+                new Lookup { Id = 7, MajorCode = 1, MinorCode = 2, Name = "Adminstrative" },
+                new Lookup { Id = 8, MajorCode = 1, MinorCode = 3, Name = "Technical" }
+                );
+        }
 
         public DbSet<Employee>Employees { get; set; }
         public DbSet<Department>Departments { get; set; }
+        public DbSet<Lookup>Lookups { get; set; }
 
 
     }

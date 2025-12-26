@@ -10,14 +10,6 @@ namespace HRMS_2.Controllers
     [ApiController]
     public class EmployeesController : ControllerBase
     {
-        public static List<Employee> employees = new List<Employee>() {
-        new Employee(){Id=1,FirstName = "yaser",LastName="doqmaq",Email="123myEmail.com", Position= "Manager",BirthDate=new DateTime(2000,6,27)},
-        new Employee(){Id=2,FirstName = "Ahmad",LastName="doqmaq" , Position= "HR",BirthDate=new DateTime(2001,2,23)},
-        new Employee(){Id=3,FirstName = "omar",LastName="doqmaq" , Position= "Developer",BirthDate=new DateTime(1999,3,13)},
-        new Employee(){Id=4,FirstName = "Ali",LastName="doqmaq" , Email="123myEmail.com",Position= "Developer", BirthDate = new DateTime(2005,6,14)},
-
-        };
-
           private readonly HRMS_2Context _dbcontext;
 
         public EmployeesController(HRMS_2Context dbcontext)
@@ -29,20 +21,24 @@ namespace HRMS_2.Controllers
         public  IActionResult GetByCriteria([FromQuery]SearchEmployeeDto searchemp) {
             var result = from emp in _dbcontext.Employees
                          from dep in _dbcontext.Departments.Where(x => x.Id == emp.DepartmentId).DefaultIfEmpty()
-                         where (searchemp.Position == null || emp.Position.ToUpper().Contains(searchemp.Position.ToUpper()))
-                         &&(searchemp.Name == null|| emp.FirstName.ToUpper().Contains(searchemp.Name.ToUpper()))
+                         from man in _dbcontext.Employees.Where(x=>x.Id == emp.ManagerId).DefaultIfEmpty()
+                         from Lookup in _dbcontext.Lookups.Where(x=>x.Id == emp.PositionId)
+                         where
+                         (searchemp.PositionId == null || emp.PositionId==searchemp.PositionId)&&
+                         (searchemp.Name == null|| emp.FirstName.ToUpper().Contains(searchemp.Name.ToUpper()))
                          orderby emp.Id descending
                          select new EmployeeDto {
                              Id = emp.Id,
                              Name = emp.FirstName + " " + emp.LastName,
                              Email = emp.Email,
-                             Position = emp.Position,
+                             PositionId = emp.PositionId,
+                             PositionName=Lookup.Name,
                              BirthDay = emp.BirthDate,
                              Salary= emp.Salary,
                              DepartmentId = emp.DepartmentId,
+                             DepartmentName = dep.Name,
+                             ManagerName=man.FirstName,
                              ManagerId = emp.ManagerId,
-                             DepartmentName= dep.Name
-
 
 
                          };
@@ -50,18 +46,24 @@ namespace HRMS_2.Controllers
 
         }
         [HttpGet("GetById/{id}")]
-        public IActionResult GetById([FromQuery ]long id)
+        public IActionResult GetById(long id)
         {
             if (id == 0) {
             return BadRequest("Id value is not valid");
             };
 
-            var result = employees.Select( x => new EmployeeDto {
+            var result = _dbcontext.Employees.Select( x => new EmployeeDto {
                 Id = x.Id,
                 Name = x.FirstName + " " + x.LastName,
                 Email = x.Email,
-                Position = x.Position,
+                PositionId = x.PositionId,
+                PositionName=x.Lookup.Name,
                 BirthDay = x.BirthDate,
+                Salary = x.Salary,
+                DepartmentId = x.DepartmentId,
+                DepartmentName= x.Department.Name,
+                ManagerId= x.ManagerId,
+                ManagerName=x.Manager.FirstName,
             }).FirstOrDefault(x => x.Id == id);
             if (result == null) {
                 return NotFound("Employee Not Found");
@@ -70,27 +72,37 @@ namespace HRMS_2.Controllers
         }
         [HttpPost("Add")]
         public  IActionResult Add( [FromBody] SaveEmployeeDto employeeDto) {
-            var employee= new Employee() {
-              Id= (employees.LastOrDefault()?.Id??0)+1,
-              FirstName= employeeDto.FirstName,
-              LastName= employeeDto.LastName,
-              Email=employeeDto.Email,
-              Position= employeeDto.Position,
+            var employee = new Employee()
+            {
+                Id = 0,
+                FirstName = employeeDto.FirstName,
+                LastName = employeeDto.LastName,
+                Email = employeeDto.Email,
+                PositionId = employeeDto.PositionId,
+                BirthDate=employeeDto.BirthDay,
+                Salary = employeeDto.Salary,
+                DepartmentId = employeeDto.DepartmentId,
+                ManagerId = employeeDto.ManagerId,
+
             };
-            employees.Add(employee);
+            _dbcontext.Employees.Add(employee);
+            _dbcontext.SaveChanges();
             return Ok(employee);
         }
         [HttpPut("Update")]
         public IActionResult Update([FromBody] SaveEmployeeDto employeeDto) {
-            var employee = employees.FirstOrDefault(x => x.Id == employeeDto.Id);
+            var employee = _dbcontext.Employees.FirstOrDefault(x => x.Id == employeeDto.Id);
             if (employee == null) {
                 return NotFound("employee not found");
             }
             employee.FirstName = employeeDto.FirstName;
             employee.LastName = employeeDto.LastName;
             employee.Email = employeeDto.Email;
-            employee.Position= employeeDto.Position;
+            employee.PositionId= employeeDto.PositionId;
             employee.BirthDate = employeeDto.BirthDay;
+            employee.DepartmentId = employeeDto.DepartmentId;
+            employee.ManagerId = employeeDto.ManagerId;
+            _dbcontext.SaveChanges();
             return Ok(employee);
 
             
@@ -100,12 +112,13 @@ namespace HRMS_2.Controllers
         [HttpDelete("Delete/{id}")]
         public IActionResult Delete([FromQuery] long id)
         {
-            var employee = employees.FirstOrDefault(x => x.Id == id);
+            var employee = _dbcontext.Employees.FirstOrDefault(x => x.Id == id);
             if (employee == null)
             {
                 return NotFound("employee not found");
             }
-            employees.Remove(employee);
+            _dbcontext.Employees.Remove(employee);
+            _dbcontext.SaveChanges();
             return Ok(employee);
 
         }
