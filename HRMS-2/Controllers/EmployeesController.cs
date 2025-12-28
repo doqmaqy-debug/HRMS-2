@@ -1,11 +1,14 @@
 ﻿using HRMS_2.DBcontexts;
 using HRMS_2.Dtos;
 using HRMS_2.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace HRMS_2.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class EmployeesController : ControllerBase
@@ -18,8 +21,14 @@ namespace HRMS_2.Controllers
         }
 
         [HttpGet("GetByCriteria")]
+        
         public  IActionResult GetByCriteria([FromQuery]SearchEmployeeDto searchemp) {
-            var result = from emp in _dbcontext.Employees
+            try {
+
+                var role = User.FindFirst(ClaimTypes.Role)?.Value;
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;   
+                
+                var result = from emp in _dbcontext.Employees
                          from dep in _dbcontext.Departments.Where(x => x.Id == emp.DepartmentId).DefaultIfEmpty()
                          from man in _dbcontext.Employees.Where(x=>x.Id == emp.ManagerId).DefaultIfEmpty()
                          from Lookup in _dbcontext.Lookups.Where(x=>x.Id == emp.PositionId)
@@ -39,63 +48,126 @@ namespace HRMS_2.Controllers
                              DepartmentName = dep.Name,
                              ManagerName=man.FirstName,
                              ManagerId = emp.ManagerId,
+                             UserId = emp.UserId,
 
 
                          };
-            return Ok(result);
+                if (role?.ToUpper() != "HR" && role?.ToUpper() !="Admin")
+                {
+                    result = result.Where(x => x.UserId == long.Parse( userId) );
+                }
+
+                return Ok(result);
+            }
+            
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            
 
         }
         [HttpGet("GetById/{id}")]
         public IActionResult GetById(long id)
         {
-            if (id == 0) {
-            return BadRequest("Id value is not valid");
-            };
+            try
+            {
+                if (id == 0)
+                {
+                    return BadRequest("Id value is not valid");
+                }
+                ;
 
-            var result = _dbcontext.Employees.Select( x => new EmployeeDto {
-                Id = x.Id,
-                Name = x.FirstName + " " + x.LastName,
-                Email = x.Email,
-                PositionId = x.PositionId,
-                PositionName=x.Lookup.Name,
-                BirthDay = x.BirthDate,
-                Salary = x.Salary,
-                DepartmentId = x.DepartmentId,
-                DepartmentName= x.Department.Name,
-                ManagerId= x.ManagerId,
-                ManagerName=x.Manager.FirstName,
-            }).FirstOrDefault(x => x.Id == id);
-            if (result == null) {
-                return NotFound("Employee Not Found");
+                var role = User.FindFirst(ClaimTypes.Role)?.Value;
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                var result = _dbcontext.Employees.Select(x => new EmployeeDto
+                {
+                    Id = x.Id,
+                    Name = x.FirstName + " " + x.LastName,
+                    Email = x.Email,
+                    PositionId = x.PositionId,
+                    PositionName = x.Lookup.Name,
+                    BirthDay = x.BirthDate,
+                    Salary = x.Salary,
+                    DepartmentId = x.DepartmentId,
+                    DepartmentName = x.Department.Name,
+                    ManagerId = x.ManagerId,
+                    ManagerName = x.Manager.FirstName,
+                    UserId=x.UserId,
+                }).FirstOrDefault(x => x.Id == id);
+                if (result == null)
+                {
+                    return NotFound("Employee Not Found");
+                }
+                if (role?.ToUpper() != "HR" && role?.ToUpper() != "Admin")  
+                {
+                    if (result.UserId != long.Parse(userId))
+                        {
+                        return Forbid();   
+                        }
+                }   
+
+                    return Ok(result);
             }
-                return Ok(result);
+            catch (Exception ex) 
+            {
+                return BadRequest(ex.Message);            
+            }
         }
+        [Authorize(Roles ="HR,Admin")]
         [HttpPost("Add")]
         public  IActionResult Add( [FromBody] SaveEmployeeDto employeeDto) {
-            var employee = new Employee()
+            try
             {
-                Id = 0,
-                FirstName = employeeDto.FirstName,
-                LastName = employeeDto.LastName,
-                Email = employeeDto.Email,
-                PositionId = employeeDto.PositionId,
-                BirthDate=employeeDto.BirthDay,
-                Salary = employeeDto.Salary,
-                DepartmentId = employeeDto.DepartmentId,
-                ManagerId = employeeDto.ManagerId,
+                var user = new User()
+                {
+                    Id = 0,
+                    UserName = $"{employeeDto.FirstName}_{employeeDto.LastName}_HRMS",
+                    HashedPassword = BCrypt.Net.BCrypt.HashPassword($"{employeeDto.FirstName}@123"),
+                    IsAdmid = false
+                };
 
-            };
-            _dbcontext.Employees.Add(employee);
-            _dbcontext.SaveChanges();
-            return Ok(employee);
+                var IsUserName = _dbcontext.Users.Any(x => x.UserName.ToUpper() == user.UserName.ToUpper());
+                if (IsUserName) 
+                {
+                    return BadRequest("UserName Is Already Exist , Please Choose Another One ");
+                }
+                _dbcontext.Users.Add(user); 
+
+                var employee = new Employee()
+                {
+                    Id = 0,
+                    FirstName = employeeDto.FirstName,
+                    LastName = employeeDto.LastName,
+                    Email = employeeDto.Email,
+                    PositionId = employeeDto.PositionId,
+                    BirthDate = employeeDto.BirthDay,
+                    Salary = employeeDto.Salary,
+                    DepartmentId = employeeDto.DepartmentId,
+                    ManagerId = employeeDto.ManagerId,
+                    User=user,
+
+                };
+                _dbcontext.Employees.Add(employee);
+                _dbcontext.SaveChanges();
+                return Ok(employee);
+            }
+            catch (Exception ex) 
+            {   
+                return BadRequest(ex.Message);
+            }
+        
         }
+        [Authorize(Roles = "HR,Admin")]
         [HttpPut("Update")]
         public IActionResult Update([FromBody] SaveEmployeeDto employeeDto) {
             var employee = _dbcontext.Employees.FirstOrDefault(x => x.Id == employeeDto.Id);
+
             if (employee == null) {
                 return NotFound("employee not found");
             }
-            employee.FirstName = employeeDto.FirstName;
+            try {employee.FirstName = employeeDto.FirstName;
             employee.LastName = employeeDto.LastName;
             employee.Email = employeeDto.Email;
             employee.PositionId= employeeDto.PositionId;
@@ -104,22 +176,40 @@ namespace HRMS_2.Controllers
             employee.ManagerId = employeeDto.ManagerId;
             _dbcontext.SaveChanges();
             return Ok(employee);
+            }
+            catch(NullReferenceException ex)
+            {
+                return NotFound("Employee Does Not Exist");
+            }
+            catch (Exception ex) 
+            {
+                return BadRequest(ex.Message);
+            };
+
+            
 
             
 
 
         }
+        [Authorize(Roles = "HR,Admin")]
         [HttpDelete("Delete/{id}")]
         public IActionResult Delete([FromQuery] long id)
         {
-            var employee = _dbcontext.Employees.FirstOrDefault(x => x.Id == id);
-            if (employee == null)
-            {
-                return NotFound("employee not found");
+            try {
+                var employee = _dbcontext.Employees.FirstOrDefault(x => x.Id == id);
+                if (employee == null)
+                {
+                    return NotFound("employee not found");
+                }
+                _dbcontext.Employees.Remove(employee);
+                _dbcontext.SaveChanges();
+                return Ok(employee);
             }
-            _dbcontext.Employees.Remove(employee);
-            _dbcontext.SaveChanges();
-            return Ok(employee);
+            catch (Exception ex) 
+            {   
+                return BadRequest(ex.Message);
+            };
 
         }
     }

@@ -25,11 +25,21 @@ namespace HRMS_2.DBcontexts
                 new Lookup { Id = 7, MajorCode = 1, MinorCode = 2, Name = "Adminstrative" },
                 new Lookup { Id = 8, MajorCode = 1, MinorCode = 3, Name = "Technical" }
                 );
+
+
+            modelBuilder.Entity<User>().HasIndex(x=>x.UserName).IsUnique();
+
+            modelBuilder.Entity<Employee>().HasIndex(x=>x.UserId).IsUnique();
+
+            modelBuilder.Entity<User>().HasData(
+                new User {Id = 1 , UserName="Admin" , IsAdmid = true , HashedPassword ="$2a$11$kUuAowumTUPGmbOr6lnAvOcZ.hbUNA7g46FG/DirKWB7ILjJcAAQq"}
+                );   
         }
 
-        public DbSet<Employee>Employees { get; set; }
-        public DbSet<Department>Departments { get; set; }
-        public DbSet<Lookup>Lookups { get; set; }
+        public DbSet<Employee> Employees { get; set; }
+        public DbSet<Department> Departments { get; set; }
+        public DbSet<Lookup> Lookups { get; set; }
+        public DbSet<User> Users { get; set; }
 
 
     }

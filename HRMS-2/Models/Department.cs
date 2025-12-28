@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HRMS_2.Models
 {
@@ -10,6 +11,7 @@ namespace HRMS_2.Models
         
         public string Description { get; set; }
         public int Floornumber {  get; set; }
+       
 
 
     }

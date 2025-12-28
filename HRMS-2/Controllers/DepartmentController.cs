@@ -24,6 +24,7 @@ namespace HRMS_2.Controllers
         {
 
             var result = from dep in _dbcontext.Departments
+             
                          where (searchdep.Name == null || dep.Name.ToUpper().Contains(searchdep.Name.ToUpper())) &&
                          (searchdep.Description == null || searchdep.Description.ToUpper().Contains(searchdep.Description.ToUpper()))
                          select new DepartmentDto
@@ -32,6 +33,10 @@ namespace HRMS_2.Controllers
                              Name = dep.Name,
                              Description = dep.Description,
                              Floornumber = dep.Floornumber,
+                             
+                          
+
+                             
 
                          };
             return Ok(result);
@@ -53,6 +58,11 @@ namespace HRMS_2.Controllers
                 Name = x.Name,
                 Description = x.Description,
                 Floornumber = x.Floornumber,
+               
+                
+                
+
+                
 
             }).FirstOrDefault(x => x.Id == id);
             if (result == null)
@@ -76,6 +86,9 @@ namespace HRMS_2.Controllers
                 Name = departmentdto.Name,
                 Description = departmentdto.Description,
                 Floornumber = departmentdto.Floornumber,
+                
+                
+                
 
             };
             _dbcontext.Departments.Add(department);
@@ -94,6 +107,7 @@ namespace HRMS_2.Controllers
             department.Name = departmentDto.Name;
             department.Description = departmentDto.Description;
             department.Floornumber = departmentDto.Floornumber;
+            
             _dbcontext.SaveChanges();
             return Ok(department);
 
