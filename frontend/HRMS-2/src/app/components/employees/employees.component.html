@@ -1,0 +1,178 @@
+<div class="container-fluid mt-2">
+
+    <div class="card">
+        <div class="card-header">
+            <h5>Filter
+                <i class="bi bi-funnel"></i>
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-lg-4 col-md-4 col-sm-12 mb-3">
+                    <label for="EmployeeName" class="form-label">EmployeeName</label>
+                    <input type="text" class="form-control" id="EmployeeName" placeholder="EmployeeName">
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-12 mb-3">
+                    <label for="Position" class="form-label">Position</label>
+                    <input type="text" class="form-control" id="Position" placeholder="Position">
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-12 mb-3">
+                    <label for="Status" class="form-label">Status</label>
+                    <input type="text" class="form-control" id="Status" placeholder="Status">
+                </div>
+                <div class="text-end">
+                    <button class="btn btn-outline-secondary">
+                        <i class="bi bi-search"></i>
+                        Search</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="card mt-2">
+        <div class="card-header table-header">
+            <div>
+                <h5>Employees</h5>
+            </div>
+            <div class="text-end">
+                <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#saveEmployeeModal"
+                    (click)="resetForm()">
+                    <i class="bi bi-person-add"></i>
+                    Add Employee</button>
+            </div>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        @for (col of employeestableColumns; track col) {
+                        <th>{{col}}</th>
+                        }
+                </thead>
+                <tbody>
+                    @for (emp of employees| paginate: paginationConfig; track emp.id; let i=$index) {
+                    <tr>
+                        <td>{{i+1}}</td>
+                        <td>{{emp.name}}</td>
+                        <td>{{emp.positionName}}</td>
+                        <td>{{emp.birthDate | date:'MM/dd/yyyy'}}</td>
+                        <td>
+                            @if (emp.status) {
+                            <span class="badge bg-success">Active</span>
+                            }@else {
+                            <span class="badge bg-danger">Inactive</span>
+                            }
+                        </td>
+                        <td>{{emp.email}}</td>
+                        <td>{{emp.salary|currency:'USD'}}</td>
+                        <td>{{emp.departmentName}}</td>
+                        <td>{{emp.managerName }}</td>
+                        <td>
+                            <button class="btn btn-outline-success me-2 " data-bs-toggle="modal" data-bs-target="#saveEmployeeModal"
+                            (click)="LoadEmployeeForm(emp.id)">
+                                <i class="bi bi-pencil-fill"></i></button>
+
+                            <button class="btn btn-outline-danger"
+                            (click)="DeleteEmployee(emp.id)">
+                                <i class="bi bi-trash-fill"></i></button>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+            <pagination-controls class="text-end" (pageChange)="changePage($event)"></pagination-controls>
+        </div>
+
+        <div class="modal fade  modal-lg" id="saveEmployeeModal" tabindex="-1" aria-labelledby="saveEmployeeModal"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">Save Employee</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form [formGroup]="employeeForm">
+                            <div class="row">
+                                <div class="col-lg-6 col-md-6 col-sm-12 mb-3">
+                                    <label for="Name" class="form-label">Name</label>
+                                    <input type="text" class="form-control" id="Name"
+                                        [class.invalid-form]="employeeForm.get('name')?.invalid && employeeForm.get('name')?.touched"
+                                        formControlName="name" placeholder="Employee Name">
+                                </div>
+
+                                <div class="col-lg-6 col-md-6 col-sm-12 mb-3">
+                                    <label for="birthDate" class="form-label">Birth Date</label>
+                                    <input type="date" class="form-control" id="birthDate"
+                                        [class.invalid-form]="employeeForm.get('birthDate')?.invalid && employeeForm.get('birthDate')?.touched"
+                                        formControlName="birthDate" placeholder=" BirthDate">
+                                </div>
+
+                                <div class="col-lg-6 col-md-6 col-sm-12 mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email"
+                                        [class.invalid-form]="employeeForm.get('email')?.invalid && employeeForm.get('email')?.touched"
+                                        formControlName="email" placeholder="Email">
+                                </div>
+
+                                <div class="col-lg-6 col-md-6 col-sm-12 mb-3">
+                                    <label for="salary" class="form-label">Salary</label>
+                                    <input type="number" class="form-control" id="salary"
+                                        [class.invalid-form]="employeeForm.get('salary')?.invalid && employeeForm.get('salary')?.touched"
+                                        formControlName="salary" placeholder="Salary">
+                                </div>
+
+                                <div class="col-lg-6 col-md-6 col-sm-12 mb-3">
+                                    <label for="Department" class="form-label">Department</label>
+                                    <select class="form-select"
+                                        [class.invalid-form]="employeeForm.get('departmentId')?.invalid && employeeForm.get('departmentId')?.touched"
+                                        formControlName="departmentId" id="Department">
+                                        @for (item of departments; track item.id) {
+                                        <option [value]="item.id">{{item.name}}</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="col-lg-6 col-md-6 col-sm-12 mb-3">
+                                    <label for="Position" class="form-label">Position</label>
+                                    <select class="form-select"
+                                        [class.invalid-form]="employeeForm.get('positionId')?.invalid && employeeForm.get('positionId')?.touched"
+                                        formControlName="positionId" id="Position">
+                                        @for (item of positions; track item.id) {
+                                        <option [value]="item.id">{{item.name}}</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="col-lg-6 col-md-6 col-sm-12 mb-3">
+                                    <label for="Manager" class="form-label">Manager</label>
+                                    <select class="form-select" formControlName="managerId" id="Manager">
+                                        @for (item of managers; track item.id) {
+                                        <option [value]="item.id">{{item.name}}</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="col-lg-6 col-md-6 col-sm-12 mb-3 modal-switch">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" formControlName="status"
+                                            role="switch" id="Status" checked>
+                                        <label class="form-check-label" for="Status">Status
+                                        </label>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                            #closeModalBtn>Close</button>
+                        <button type="button" class="btn btn-primary" [disabled]="this.employeeForm?.invalid"
+                            (click)="saveEmployee()">Save changes</button>
+                    </div>
+                </div>`
+            </div>
+        </div>
