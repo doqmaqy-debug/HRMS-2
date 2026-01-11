@@ -4,20 +4,25 @@ import { CurrencyPipe, NgFor } from '@angular/common';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgxPaginationModule } from 'ngx-pagination';
+import { ConfirmationDialogComponent } from '../../shared-coponent/confirmation-dialog/confirmation-dialog.component';
 @Component({
   selector: 'app-employees',
-  imports: [NgFor, CommonModule, DatePipe, ReactiveFormsModule, NgxPaginationModule],
+  imports: [NgFor, CommonModule, DatePipe, ReactiveFormsModule, NgxPaginationModule,ConfirmationDialogComponent],
   providers: [DatePipe],
   templateUrl: './employees.component.html',
   styleUrl: './employees.component.css'
 })
 export class EmployeesComponent {
   constructor(private _datePipe: DatePipe) {
-
   }
 
-
   @ViewChild('closeModalBtn') closeModalBtn: ElementRef | undefined;
+
+  showConfirmDialog: boolean = false;
+  employeeToBeDeleted: number | undefined;
+
+  deleteDialogtitle: string = "Delete Employee";
+  deleteDialogcontent: string = "Are You Sure You Want To Delete This Employee?";
 
   paginationConfig = {
     itemsPerPage: 5,
@@ -263,10 +268,7 @@ export class EmployeesComponent {
 
   LoadEmployeeForm(id: number | undefined) {
     {
-      if (!id) {
-        return
-      }
-
+    
       let employee = this.employees.find(x => x.id == id);
 
       if (employee != null) {
@@ -287,9 +289,25 @@ export class EmployeesComponent {
     }
   }
 
-  DeleteEmployee(id: number|undefined) {
-    let index = this.employees.findIndex(x => x.id == id);
+  DeleteEmployee() {
+    let index = this.employees.findIndex(x => x.id == this.employeeToBeDeleted);
     this.employees.splice(index, 1);
+  }
+
+  showConfirmationDialog(id: number|undefined)
+  {
+    this.showConfirmDialog = true;
+    this.employeeToBeDeleted = id;
+  }
+
+  confirmEmployeeDelete(confirm: boolean) 
+  {
+      if(confirm){
+        this.DeleteEmployee();
+
+      }
+      this.employeeToBeDeleted = undefined;
+      this.showConfirmDialog = false;
   }
 }
 
