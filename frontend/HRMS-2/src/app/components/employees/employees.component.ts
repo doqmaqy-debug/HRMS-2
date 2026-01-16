@@ -132,7 +132,7 @@ export class EmployeesComponent {
               managerId: x.managerId,
               managerName: x.managerName,
               userId: x.userId,
-              imagePath:x.imagePath
+              imagePath:x.imagePath?x.imagePath.replaceAll("\\","/"):"assests/images/download(1).jpg"
             };
             this.employees.push(employee);
 

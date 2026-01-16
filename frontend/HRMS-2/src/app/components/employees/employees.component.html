@@ -67,10 +67,12 @@
                     <tr>
                         <td>{{i+1}}</td>
                         <td>
-                            <img class="profile-img"
+                            <!-- <img class="profile-img"
                                 [src]="emp.imagePath"
-                                alt="Employee-img">
-                             
+                                alt="Employee-img"> -->
+                             <span [style.background-image]="'url(' + emp.imagePath + ')'" class="profile-img">
+
+                             </span>
                         </td>
                         <td>{{emp.name}}</td>
                         <td>{{emp.positionName}}</td>
@@ -196,7 +198,7 @@
                                     
                                     @if(employeeForm.get('isImage')?.value){
 
-                                        <i class="bi bi-x-circle-fill" class="remove-image" (click)="removeImage()"></i>
+                                        <i class="bi bi-x-circle-fill" class="remove-Image" (click)="removeImage()"></i>
                                     }
                                     
                                     

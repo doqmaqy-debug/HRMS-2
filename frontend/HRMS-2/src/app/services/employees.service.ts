@@ -37,7 +37,7 @@ export class EmployeesService {
       formData.set("DepartmentId",employee.departmentId?.toString()??""),
       formData.set("ManagerId",employee.managerId?.toString()??""),
       formData.set("Image",employee.image);
-      formData.set("IsImage",employee.isImage?.toString()??"false")
+      
     return this._http.post(this.UrlApi + "/Add", formData);
   }
   GetById(id: number) {
@@ -56,6 +56,7 @@ export class EmployeesService {
       formData.set("DepartmentId",employee.departmentId?.toString()??""),
       formData.set("ManagerId",employee.managerId?.toString()??""),
       formData.set("Image",employee.image);
+      formData.set("IsImage",employee.isImage?.toString()??"false")
     
     return this._http.put(this.UrlApi + "/Update", formData);
   }

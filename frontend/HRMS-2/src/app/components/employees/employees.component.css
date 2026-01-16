@@ -19,6 +19,11 @@
 .profile-img{
     width:3rem;
     height:3rem;
+    display: inline-block;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 50%;
 }
 .remove-image{
     margin:0 0.3 rem ;
