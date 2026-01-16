@@ -12,7 +12,7 @@ export class ConfirmationDialogComponent {
   @Input() content: string = "";
   @Output() confirm = new EventEmitter<boolean>();
 
-  confrimDelete(confirm: boolean) {
+  confirmDelete(confirm: boolean) {
     this.confirm.emit(confirm);
   }
 }

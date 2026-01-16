@@ -32,7 +32,11 @@ namespace HRMS_2.Models
         [ForeignKey("User")]
         public long?UserId { get; set; }
         public User ?User { get; set; }
-           
+
+        public bool Status { get; set; }
+        public string?ImagePath { get; set; }
+
+
     }
 }
  

@@ -1,6 +1,8 @@
 export interface Employees {
   id?: number;
   name?: string;
+  firstName?: string;
+  lastName?: string;
   positionId?: number;
   positionName?: string;
   status?: boolean;
@@ -12,5 +14,7 @@ export interface Employees {
   managerId?: number|null;
   managerName?: string|null;
   userId?: number;
-
+  image?:any;
+  imagePath?:string;
+  isImage?:boolean;
 }

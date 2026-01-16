@@ -16,3 +16,12 @@
 .invalid-form{
     border: 1px solid red;
 }    
+.profile-img{
+    width:3rem;
+    height:3rem;
+}
+.remove-image{
+    margin:0 0.3 rem ;
+    color: red;
+    cursor: pointer;
+}

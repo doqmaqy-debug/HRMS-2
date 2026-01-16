@@ -1,5 +1,6 @@
 ﻿using HRMS_2.DBcontexts;
 using HRMS_2.Dtos;
+using HRMS_2.Dtos.Shared;
 using HRMS_2.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -126,5 +127,22 @@ namespace HRMS_2.Controllers
             _dbcontext.SaveChanges();
             return Ok(department);
         }
+        [HttpGet("GetDepartmentList")]
+        public IActionResult GetDepartmentList() {
+
+            try {
+
+                var data = _dbcontext.Departments.Select(x => new ListDto
+                {
+                    Id = x.Id,
+                    Name = x.Name
+                });
+                return Ok(data);
+            }
+            catch (Exception ex) {
+                return BadRequest(ex.Message);
+            }
+        }
     }
+    
 }
